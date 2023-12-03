@@ -34,19 +34,26 @@ class tdPerson extends tdSceneEntity{
         this.gear = false;
         this.movementspeed = 8;
         this.spellbook = [];
+        this.afflictions=[]
     }
     //PUBLIC
     getCastableSpells() {
         //return array of tdSpell based on what's currently castable
-        return [new tdSpell(), new tdSpell(), new tdSpell()];
+        return [new tdSpell('Fireball',5,1,['Burning']), 
+        new tdSpell('Magic Missile',2,3,[None]), 
+        new tdSpell('Polymorph',0,1,['Polymorphed'])];
     }
     //PRIVATE
 }
+
 class tdSpell {
-    constructor () {
+    constructor (name, damage,projectilenum,effects) {
         this.minigame = false;
         this.difficulty = false;
-        this.name="Fireball";
+        this.name=name;
+        this.damage = damage;
+        this.projectilenum = projectilenum;
+        this.effects= effects;
     }
     //PUBLIC
     cast(x,y,scene) {
