@@ -1,0 +1,50 @@
+title: Start
+position: 51,483
+---
+This is a test alpha - don't judge it.
+Hello there stranger! Sorry if it's rude to ask, but do you know anything about chickens?
+->What?
+    Well, you see, I've got a problem with my chicken - and it's not every day we get a newcomer in town!
+    ->What?
+        <<jump ChickenExplanation>>
+    ->Tell me more about this chicken problem.
+        <<jump ChickenExplanation>>
+    ->This chicken problem sounds like your problem.
+        I'll make it worth your while in eggs! Freshest in the kingdom.
+        ->Now you're speaking my language.
+            Chicken experts don't come cheap I guess - let me tell you the tale
+            <<jump ChickenExplanation>>
+        ->Pass.
+            <<jump ChickenRejection>>
+->I'd say so, absolutely.
+    The god-king be praised! Let me tell you my tale.
+    <<jump ChickenExplanation>>
+===
+title: ChickenExplanation
+position: 339,484
+---
+It all started 6 weeks ago when our hen Henrietta went missing, I figured a fox got her.
+It's sad but it happens.
+Then for weeks I heard her ghostly clucking all over the place, thought I was losing my mind
+Until I found the tracks - new ones all over the yard. Went in for a closer look and tripped over the poor thing!
+Invisible chicken. Never thought I'd live to see it.
+-> Where's Henrietta now?
+    Well that's the thing - I took her down to the market to see what I could get, and she ran right off.
+-> You want me to fix your chicken?
+    Heavens no! This chickens got to be the most valuable blessing I've ever gotten. I want you to find her!
+She bolted right into town - I think, hard to be sure - there's tracks popping up around the place
+Could you help me find her? She's the only chicken I've got.
+-> Sure, sounds like fun!
+    That's the spirit!
+-> For a cut of those invisible eggs.
+    Fine - you can have all the invisible eggs you can eat.
+-> Not right now - I'm really busy
+    <<jump ChickenRejection>>
+
+===
+title: ChickenRejection
+position: 337,717
+---
+Fine, I'll keep looking myself.
+===
+

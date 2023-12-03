@@ -1,0 +1,54 @@
+@font-face {
+  font-family: 'TechyText';
+  src: URL('fonts/TechyText.ttf') format('truetype');
+}
+.td-buf {
+  font-family:TechyText;
+  font-size:30px;
+  user-select: none;
+  background-color:#000;
+  width:min-content;
+  line-height:1em;
+  line-height:1;
+mix-blend-mode: multiply;
+}
+.td-c {
+  white-space: pre;
+  display:inline-block;
+  height:1em;
+}
+.td-r {
+  white-space: nowrap;
+}
+.td-canv {
+  width:min-content;
+  height:min-content;
+background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+background-size: 500% 500%;
+animation: gradient 15s ease infinite;
+  margin:auto;
+}
+.asciidraw {
+  font-family:TechyText;
+  font-size:30px;
+  user-select: none;
+  background-color:#000;
+  width:min-content;
+  line-height:1em;
+  line-height:1;
+  color:#FFF;
+}
+body {
+  background-color:#000;
+}
+@keyframes gradient {
+0% {
+  background-position: 0% 50%;
+}
+50% {
+  background-position: 100% 50%;
+}
+100% {
+  background-position: 0% 50%;
+}
+}
