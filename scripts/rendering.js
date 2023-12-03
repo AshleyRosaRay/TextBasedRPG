@@ -169,12 +169,28 @@ class tdPersonUI {
         this.drawingTool = drawingTool;
         this.options = ["Spell Book","Items","Move","End Turn"];
         this.person = person;
+        this.currentlisting = ["Fireball","Magic Missle","Polymorph"];
+        this.startat = this.drawingTool.height-5;
     }
     drawUI () {
-        this.drawingTool.drawBox(-1,this.drawingTool.height-5,this.drawingTool.width+2,1);
+        this.drawingTool.drawBox(-1,this.startat,this.drawingTool.width+2,1);
         for (var i = 0; i < this.options.length; i++) {
-            this.drawingTool.drawBox(i*8,this.drawingTool.height-4,7,4);
-            this.drawingTool.drawParagraph(this.options[i],i*8+1,this.drawingTool.height-3,6);
+            this.drawingTool.drawBox(i*8,this.startat+1,7,4);
+            this.drawingTool.drawCharacter(i+1+"",i*8,this.startat+1);
+            this.drawingTool.drawParagraph(this.options[i],i*8+1,this.startat+2,6);
+        }
+        if (this.currentlisting && false) {
+            const optionHeight = 5;
+            const optionWidth = 25;
+            const xpos = 0;
+            var ypos = this.startat-1;
+            for (var i = 0; i < this.currentlisting.length; i++) {
+                var item = this.currentlisting[i];
+                ypos = ypos - (optionHeight-1);
+                this.drawingTool.drawBox(xpos,ypos,optionWidth,optionHeight);
+                this.drawingTool.drawBox(xpos,ypos,5,optionHeight);
+                this.drawingTool.drawParagraph(item,xpos+5,ypos+1,optionWidth-2);
+            }
         }
     }
 }
