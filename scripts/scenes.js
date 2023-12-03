@@ -32,6 +32,7 @@ class tdPerson extends tdSceneEntity{
         this.health = 10;
         this.stats = false;
         this.gear = false;
+        this.movementspeed = 8;
         this.spellbook = [];
     }
     //PUBLIC
