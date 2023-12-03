@@ -2,14 +2,16 @@
 class tdTextDrawingTool {
     constructor (textScreen) {
         this.textScreen = textScreen;
+        this.height = this.textScreen.height;
+        this.width = this.textScreen.width;
     }
     //PUBLIC
     drawCharacter(char,x,y) {
         this.textScreen.setChar(x,y,this.getCharForChar(char));
         this.textScreen.update(x,y,x,y);
     }
-    //returns any remaining text
     drawString(dstring,x,y) {
+        //returns any remaining text
         for (var xoffset = 0; xoffset < dstring.length; xoffset++) {
             var updated = this.textScreen.setChar(x+xoffset,y,this.getCharForChar(dstring[xoffset]));
             if (!updated) {
@@ -227,11 +229,23 @@ class tdDialogueView {
         }
     }
 }
+class tdPersonUI {
+    constructor (drawingTool,person) {
+        this.drawingTool = drawingTool;
+        this.person = person;
+    }
+    drawUI () {
+        for (var i = 0; i < 4; i++) {
+            this.drawingTool.drawBox(i*6,this.drawingTool.height-5,5,5);
+        }
+    }
+}
 class tdSceneView {
     constructor (drawingTool) {
         this.drawingTool = drawingTool;
         document.addEventListener("keypress", this.handleKeypress.bind(this));
         this.scene = new tdScene();
+        this.entityui = new tdPersonUI(drawingTool,this.scene.getRenderableEntities()[0]); //lol assuming first renderable is player is dumb and this is temporary
         this.drawScene();
     }
     drawScene() {
@@ -242,6 +256,7 @@ class tdSceneView {
             this.drawingTool.drawBox(entity.x,entity.y,1,1);
             this.drawingTool.drawSprite(entity.x,entity.y,entity.sprite);
         }
+        this.entityui.drawUI();
     }
     handleKeypress(e) {
         console.log(e);
@@ -308,6 +323,5 @@ class tdDialogueHandler {
             this.listeners[i](this.runner.currentResult)
         }
     }
-    
 }
 _textCanv = new tdGameEngine(document.getElementById("MainScreen"));
