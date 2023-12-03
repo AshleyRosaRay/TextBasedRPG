@@ -7,11 +7,15 @@ class tdGameEngine {
         this.drawingTool = new tdTextDrawingTool(this.textScreen);
         document.addEventListener("keypress", this.handleKeypress.bind(this));
         this.elem.addEventListener('click', this.handleClick.bind(this));
+        this.elem.addEventListener('mousemove', this.handleMouseMove.bind(this));
         this.renderer = new tdSceneView(this.drawingTool);
     }
     handleKeypress(e) {
         e.preventDefault();
         this.renderer.handleKeypress(e);
+    }
+    handleMouseMove(e) {
+        this.renderer.handleMouseMove(Number(e.target.dataset.x),Number(e.target.dataset.y));
     }
     handleClick(e) {
         this.renderer.handleClick(Number(e.target.dataset.x),Number(e.target.dataset.y));

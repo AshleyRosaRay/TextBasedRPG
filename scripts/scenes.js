@@ -24,6 +24,10 @@ class tdSceneEntity {
         this.x = x;
         this.y = y;
     }
+    //Ticks every turn
+    turnTick() {
+        return;
+    }
 }
 class tdPerson extends tdSceneEntity{
     constructor (x,y) {
@@ -33,24 +37,45 @@ class tdPerson extends tdSceneEntity{
         this.stats = false;
         this.gear = false;
         this.movementspeed = 8;
+        this.distancemoved = 0;
+        this.actionsperturn = 3;
+        this.actionsused = 0;
+        this.showmovement = false;
         this.spellbook = [];
     }
     //PUBLIC
+    moveTo (x,y) {
+        var xdist = this.x - x;
+        var ydist = this.y - y;
+
+        var distance = Math.ceil(Math.sqrt(xdist*xdist + ydist*ydist));
+        if (distance <= this.movementspeed-this.distancemoved) {
+            this.x = x;
+            this.y = y;
+            this.distancemoved += distance;
+            return true;
+        }
+        return false;
+    }
+    turnTick() {
+        this.distancemoved = 0;
+        this.actionsused = 0;
+    }
     getCastableSpells() {
         //return array of tdSpell based on what's currently castable
-        return [new tdSpell(), new tdSpell(), new tdSpell()];
+        return [new tdSpell("Fireball"), new tdSpell("Magic Missle"), new tdSpell("Polymorph")];
     }
     //PRIVATE
 }
 class tdSpell {
-    constructor () {
+    constructor (name) {
         this.minigame = false;
         this.difficulty = false;
-        this.name="Fireball";
+        this.name=name;
     }
     //PUBLIC
     cast(x,y,scene) {
-        alert("CAST FIREBALL")
+        console.log("CAST "+this.name)
     }
     //PRIVATE
 }

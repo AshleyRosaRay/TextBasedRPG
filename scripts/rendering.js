@@ -48,10 +48,24 @@ class tdTextDrawingTool {
         this.textScreen.update(x,y,x+width,y+lineNo);
         return "";
     }
-    drawBox(x,y,width,height,borderchar="-",cornerchar="+",verticalchar="|") {
+    drawCircle(xc,yc,radius,borderchar=".") {
+        var r2 = radius * radius;
+        for (var x = -radius; x <= radius; x++) {
+            console.log(xc + x+","+(xc+y));
+            var y = Math.floor(Math.sqrt(r2 - x*x) + 0.5);
+            this.textScreen.setChar(xc + x,yc + y,this.getCharForChar(borderchar));
+            this.textScreen.setChar(xc + x,yc - y,this.getCharForChar(borderchar));
+            this.textScreen.setChar(xc + y,yc + x,this.getCharForChar(borderchar));
+            this.textScreen.setChar(xc + y,yc - x,this.getCharForChar(borderchar));
+            this.textScreen.setChar(xc + y,yc + x,this.getCharForChar(borderchar));
+            this.textScreen.setChar(xc - y,yc + x,this.getCharForChar(borderchar));
+        }
+        this.textScreen.update(xc-radius,yc-radius,xc+radius*2,yc+radius*2);
+    }
+    drawBox(x,y,width,height,borderchar="-",cornerchar="+",verticalchar="|",fillchar=false) {
         for (var yPos = y; yPos < y+height; yPos++) {
             for (var xPos = x; xPos < x+width; xPos += 1) {
-                var char = " ";
+                var char = fillchar;
                 if (yPos == y || yPos == y+height-1) {
                     char = borderchar;
                 }
@@ -61,16 +75,20 @@ class tdTextDrawingTool {
                 if (cornerchar && (yPos==y||yPos==y+height-1) && (xPos == x || xPos == x+width-1) ) {
                     char=cornerchar;
                 }
-                this.textScreen.setChar(xPos,yPos,this.getCharForChar(char));
+                if (char) {
+                    this.textScreen.setChar(xPos,yPos,this.getCharForChar(char));
+                }
             }
         }
         this.textScreen.update(x,y,x+width,y+height);
     }
-    drawSprite(x,y,sprite) {
+    drawSprite(x,y,sprite,transparent=true) {
         for (var sy = 0; sy < sprite.length; sy++) {
             for (var sx = 0; sx < sprite[sy].length; sx++) {
                 var char = sprite[sy][sx];
-                this.textScreen.setChar(x+sx,y+sy,this.getCharForChar(char));
+                if (!transparent || char!=" ") {
+                    this.textScreen.setChar(x+sx,y+sy,this.getCharForChar(char));
+                }
             }
         }
         this.textScreen.update(x,y,x+sprite[0].length,y+sprite.length);
@@ -145,18 +163,24 @@ class tdSceneView {
         this.scene = new tdScene();
         this.player = this.scene.entities[0];
         this.personui = new tdPersonUI(drawingTool,this.player);
+        this.cursorX = -1;
+        this.cursorY = -1;
         this.drawScene();
     }
     drawScene() {
         var entities = this.scene.getRenderableEntities();
-        this.drawingTool.setColor("#00AAAA");
         this.drawingTool.clear();
+        this.drawingTool.setColor("#00AAAA");
         for (var i = 0; i < entities.length; i++) {
             var entity = entities[i];
-            this.drawingTool.drawBox(entity.x,entity.y,1,1);
-            this.drawingTool.drawSprite(entity.x,entity.y,entity.sprite);
+            this.drawingTool.drawSprite(entity.x-Math.floor(entity.sprite[0].length/2),entity.y-Math.floor(entity.sprite.length/2),entity.sprite);
+            if (entity.hasOwnProperty("showmovement") && entity.showmovement) {
+                this.drawingTool.setColor("#AAAAFF");
+                this.drawingTool.drawCircle(entity.x,entity.y,entity.movementspeed-entity.distancemoved);
+                this.drawingTool.setColor("#00AAAA");
+            }
         }
-        this.drawingTool.setColor("#AA00AA");
+        this.drawingTool.setColor("#AAAAFF");
         this.personui.drawUI();
     }
     handleKeypress(e) {
@@ -164,8 +188,14 @@ class tdSceneView {
         this.drawScene();
     }
     handleClick(x,y) {
-        this.personui.handleSceneClick(x,y,this.scene);
+        this.personui.handleClick(x,y,this.scene);
         this.drawScene();
+    }
+    handleMouseMove(x,y) {
+        if (x != this.cursorX || y != this.cursorY) {
+            this.cursorX = x;
+            this.cursorY = y;
+        }
     }
 }
 class tdListingOption {
@@ -175,8 +205,6 @@ class tdListingOption {
         this.data = data;
     }
     select() {
-        console.log("activating");
-        console.log(this.action);
         this.action(this.data);
     }
 }
@@ -200,29 +228,61 @@ class tdPersonUI {
         this.currentSpell;
         this.movingPlayer = false;
         this.startat = this.drawingTool.height-5;
+        this.width = this.drawingTool.width;
+        this.buttonWidth = 7;
+        this.optionHeight = 5;
+        this.optionWidth = 25;
     }
     listItems() {
         this.hint = "NYI";
     }
     nextTurn() {
-        this.hint = "NYI";
+        //This is a very temporary joke - need a real turn cycling system
+        this.person.turnTick();
     }
     movePlayer() {
-        this.movingPlayer = true;
-        this.hint = "Click on a LOCATION to MOVE there";
+        console.log(this.person.movementspeed)
+        console.log(this.person.distancemoved)
+        if (this.person.movementspeed > this.person.distancemoved) {
+            this.person.showmovement = true;
+            this.movingPlayer = true;
+            this.hint = "Click on a LOCATION to MOVE there";
+        } else {
+            this.hint = "Can't move any more this turn";
+        }
     }
-    handleSceneClick(x,y,scene) {
+    handleClick(x,y,scene) {
+        if (y > this.startat) {
+            var option = Math.floor(x/(this.buttonWidth+1));
+            if (option < this.options.length) {
+                this.resetUIState();
+                this.options[option].select();
+            }
+            return;
+        }
+        if (this.currentlisting) {
+            var option = Math.floor((this.startat-(y+1))/(this.optionHeight-1));
+            if (option >= 0 && option < this.currentlisting.length) {
+                this.currentlisting[option].select();
+                this.currentlisting = false;
+                return;
+            }
+        }
         if (this.currentSpell) {
             this.currentSpell.cast(x,y,scene);
             this.currentSpell = false;
             this.lasthotkey = false;
+            this.hint = "";
         }
         if (this.movingPlayer) {
-            this.person.moveTo(x,y,scene);
-            this.movingPlayer = false;
-            this.lasthotkey = false;
+            var moved = this.person.moveTo(x,y,scene);
+            if (moved) {
+                this.person.showmovement = false;
+                this.movingPlayer = false;
+                this.lasthotkey = false;
+                this.hint = "";
+            }
         }
-        this.hint = "";
     }
     targetSpell(spell) {
         this.currentSpell = spell;
@@ -230,10 +290,7 @@ class tdPersonUI {
     }
     handleHotkey(hotkey) {
         if (this.hotkeys[0].includes(hotkey)) {
-            this.currentlisting = [];
-            this.hint = "";
-            this.movingPlayer = false;
-            this.currentSpell = false;
+            this.resetUIState();
             if (hotkey == this.lasthotkey) {
                 this.lasthotkey = false;
             } else {
@@ -247,33 +304,54 @@ class tdPersonUI {
             this.lasthotkey = hotkey;
         }
     }
+    resetUIState() {
+        this.currentlisting = false;
+        this.hint = "";
+        this.movingPlayer = false;
+        this.person.showmovement = false;
+        this.currentSpell = false;
+    }
     openSpellBook() {
         var spells = this.person.getCastableSpells();
-        this.currentlisting = [
-        ];
+        this.currentlisting = [];
         for (var i = 0; i < spells.length; i++) {
             this.currentlisting.push(new tdListingOption(spells[i].name,this.targetSpell.bind(this),spells[i]))
         }
     }
     drawUI () {
+        this.drawingTool.setColor("#AA00AA");
         this.drawingTool.drawString(this.hint,1,this.startat-1);
-        this.drawingTool.drawBox(-1,this.startat,this.drawingTool.width+2,1);
+        this.drawingTool.drawBox(-1,this.startat,this.drawingTool.width+2,9,"-","+","|"," ");
         for (var i = 0; i < this.options.length; i++) {
-            this.drawingTool.drawBox(i*8,this.startat+1,7,4);
-            this.drawingTool.drawCharacter(this.hotkeys[0][i],i*8,this.startat+1);
-            this.drawingTool.drawParagraph(this.options[i].text,i*8+1,this.startat+2,6);
+            this.drawingTool.drawBox(i*(this.buttonWidth+1),this.startat+1,this.buttonWidth,4);
+            this.drawingTool.drawCharacter(this.hotkeys[0][i],i*(this.buttonWidth+1),this.startat+1);
+            this.drawingTool.drawParagraph(this.options[i].text,i*(this.buttonWidth+1)+1,this.startat+2,6);
         }
+        this.drawingTool.setColor("#AA33AA");
+        this.drawingTool.drawString("Actions",this.width-8,this.startat+1);
+        this.drawingTool.drawString((this.person.actionsperturn-this.person.actionsused)+" Left",this.width-8,this.startat+2);
+        this.drawingTool.setColor("#AA66AA");
+        this.drawingTool.drawString("Movement",this.width-8,this.startat+3);
+        this.drawingTool.drawString((this.person.movementspeed-this.person.distancemoved)+"ft Left",this.width-8,this.startat+4);
+        this.drawingTool.setColor("#AA00AA");
         if (this.currentlisting) {
-            const optionHeight = 5;
-            const optionWidth = 25;
+            var optionHeight = this.optionHeight;
+            var optionWidth = this.optionWidth;
             const xpos = 0;
             var ypos = this.startat-1;
             for (var i = 0; i < this.currentlisting.length; i++) {
                 var item = this.currentlisting[i];
                 ypos = ypos - (optionHeight-1);
-                this.drawingTool.drawBox(xpos,ypos,optionWidth,optionHeight);
+                this.drawingTool.drawBox(xpos,ypos,optionWidth,optionHeight,"-","+","|"," ");
                 this.drawingTool.drawBox(xpos,ypos,5,optionHeight);
                 this.drawingTool.drawParagraph(item.text,xpos+5,ypos+1,optionWidth-2);
+                this.drawingTool.setColor("#AA0000");
+                this.drawingTool.drawSprite(xpos+1,ypos+1,[
+                    " ^ ",
+                    "^ V",
+                    "\\_/"
+                ]);
+                this.drawingTool.setColor("#AA00AA");
             }
             ypos = this.startat-1;
             for (var i = 0; i < this.currentlisting.length; i++) {
@@ -313,7 +391,7 @@ class tdTextScreen {
         return this.screenData[y][x];
     }
     setChar(x,y,char) {
-        if (this.screenData.length > y && this.screenData[y].length > x) {
+        if (y >= 0 && x >= 0 && this.screenData.length > y && this.screenData[y].length > x) {
             this.screenData[y][x] = char;
             return true;
         }
@@ -341,6 +419,9 @@ class tdDialogueView {
         this.drawingTool = drawingTool;
         this.dialogueHandler = new tdDialogueHandler();
         this.dialogueHandler.listen(this.handleDialogue.bind(this));
+    }
+    handleMouseMove(e) {
+
     }
     handleDialogue(dialogue) {
         this.showingOptions = dialogue.hasOwnProperty("options");
