@@ -42,6 +42,7 @@ class tdPerson extends tdSceneEntity{
         this.actionsused = 0;
         this.showmovement = false;
         this.spellbook = [];
+        this.afflictions=[]
     }
     //PUBLIC
     moveTo (x,y) {
@@ -63,15 +64,21 @@ class tdPerson extends tdSceneEntity{
     }
     getCastableSpells() {
         //return array of tdSpell based on what's currently castable
-        return [new tdSpell("Fireball"), new tdSpell("Magic Missle"), new tdSpell("Polymorph")];
+        return [new tdSpell('Fireball',5,1,['Burning']), 
+        new tdSpell('Magic Missile',2,3,[None]), 
+        new tdSpell('Polymorph',0,1,['Polymorphed'])];
     }
     //PRIVATE
 }
+
 class tdSpell {
-    constructor (name) {
+    constructor (name, damage,projectilenum,effects) {
         this.minigame = false;
         this.difficulty = false;
         this.name=name;
+        this.damage = damage;
+        this.projectilenum = projectilenum;
+        this.effects= effects;
     }
     //PUBLIC
     cast(x,y,scene) {
