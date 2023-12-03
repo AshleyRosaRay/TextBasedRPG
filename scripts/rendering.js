@@ -50,8 +50,11 @@ class tdTextDrawingTool {
     }
     drawBox(x,y,width,height,borderchar="-",cornerchar="+",verticalchar="|") {
         for (var yPos = y; yPos < y+height; yPos++) {
-            for (var xPos = x; xPos < x+width; xPos += (yPos==y||yPos==y+height-1)?1:width-1) {
-                var char = borderchar;
+            for (var xPos = x; xPos < x+width; xPos += 1) {
+                var char = " ";
+                if (yPos == y || yPos == y+height-1) {
+                    char = borderchar;
+                }
                 if (verticalchar && (xPos == x || xPos == x+width-1) ) {
                     char=verticalchar;
                 }
@@ -141,7 +144,7 @@ class tdSceneView {
         this.drawingTool = drawingTool;
         this.scene = new tdScene();
         this.player = this.scene.entities[0];
-        this.entityui = new tdPersonUI(drawingTool,this.player);
+        this.personui = new tdPersonUI(drawingTool,this.player);
         this.drawScene();
     }
     drawScene() {
@@ -154,32 +157,113 @@ class tdSceneView {
             this.drawingTool.drawSprite(entity.x,entity.y,entity.sprite);
         }
         this.drawingTool.setColor("#AA00AA");
-        this.entityui.drawUI();
+        this.personui.drawUI();
     }
     handleKeypress(e) {
-        console.log(e);
+        this.personui.handleHotkey(e.key.toUpperCase());
+        this.drawScene();
     }
     handleClick(x,y) {
-        this.player.moveTo(x,y);
+        this.personui.handleSceneClick(x,y,this.scene);
         this.drawScene();
+    }
+}
+class tdListingOption {
+    constructor(text,action,data=false) {
+        this.text = text;
+        this.action = action;
+        this.data = data;
+    }
+    select() {
+        console.log("activating");
+        console.log(this.action);
+        this.action(this.data);
     }
 }
 class tdPersonUI {
     constructor (drawingTool,person) {
+        this.hotkeys = [
+            ["1","2","3","4","5","6","7","8","9","0"],
+            ["Q","W","E","R","T","Y","U","I","O","P"]
+        ];
+        this.lasthotkey = false;
+        this.hint = "";
         this.drawingTool = drawingTool;
-        this.options = ["Spell Book","Items","Move","End Turn"];
+        this.options = [
+            new tdListingOption("Spell Book",this.openSpellBook.bind(this)),
+            new tdListingOption("Items",this.listItems.bind(this)),
+            new tdListingOption("Move",this.movePlayer.bind(this)),
+            new tdListingOption("End Turn",this.nextTurn.bind(this))
+        ];
         this.person = person;
-        this.currentlisting = ["Fireball","Magic Missle","Polymorph"];
+        this.currentlisting = false;
+        this.currentSpell;
+        this.movingPlayer = false;
         this.startat = this.drawingTool.height-5;
     }
+    listItems() {
+        this.hint = "NYI";
+    }
+    nextTurn() {
+        this.hint = "NYI";
+    }
+    movePlayer() {
+        this.movingPlayer = true;
+        this.hint = "Click on a LOCATION to MOVE there";
+    }
+    handleSceneClick(x,y,scene) {
+        if (this.currentSpell) {
+            this.currentSpell.cast(x,y,scene);
+            this.currentSpell = false;
+            this.lasthotkey = false;
+        }
+        if (this.movingPlayer) {
+            this.person.moveTo(x,y,scene);
+            this.movingPlayer = false;
+            this.lasthotkey = false;
+        }
+        this.hint = "";
+    }
+    targetSpell(spell) {
+        this.currentSpell = spell;
+        this.hint = "Click on a TARGET to cast "+spell.name.toUpperCase();
+    }
+    handleHotkey(hotkey) {
+        if (this.hotkeys[0].includes(hotkey)) {
+            this.currentlisting = [];
+            this.hint = "";
+            this.movingPlayer = false;
+            this.currentSpell = false;
+            if (hotkey == this.lasthotkey) {
+                this.lasthotkey = false;
+            } else {
+                this.options[this.hotkeys[0].indexOf(hotkey)].select();
+                this.lasthotkey = hotkey;
+            }
+        }
+        if (this.hotkeys[1].includes(hotkey)) {
+            this.currentlisting[this.hotkeys[1].indexOf(hotkey)].select();
+            this.currentlisting = false;
+            this.lasthotkey = hotkey;
+        }
+    }
+    openSpellBook() {
+        var spells = this.person.getCastableSpells();
+        this.currentlisting = [
+        ];
+        for (var i = 0; i < spells.length; i++) {
+            this.currentlisting.push(new tdListingOption(spells[i].name,this.targetSpell.bind(this),spells[i]))
+        }
+    }
     drawUI () {
+        this.drawingTool.drawString(this.hint,1,this.startat-1);
         this.drawingTool.drawBox(-1,this.startat,this.drawingTool.width+2,1);
         for (var i = 0; i < this.options.length; i++) {
             this.drawingTool.drawBox(i*8,this.startat+1,7,4);
-            this.drawingTool.drawCharacter(i+1+"",i*8,this.startat+1);
-            this.drawingTool.drawParagraph(this.options[i],i*8+1,this.startat+2,6);
+            this.drawingTool.drawCharacter(this.hotkeys[0][i],i*8,this.startat+1);
+            this.drawingTool.drawParagraph(this.options[i].text,i*8+1,this.startat+2,6);
         }
-        if (this.currentlisting && false) {
+        if (this.currentlisting) {
             const optionHeight = 5;
             const optionWidth = 25;
             const xpos = 0;
@@ -189,7 +273,13 @@ class tdPersonUI {
                 ypos = ypos - (optionHeight-1);
                 this.drawingTool.drawBox(xpos,ypos,optionWidth,optionHeight);
                 this.drawingTool.drawBox(xpos,ypos,5,optionHeight);
-                this.drawingTool.drawParagraph(item,xpos+5,ypos+1,optionWidth-2);
+                this.drawingTool.drawParagraph(item.text,xpos+5,ypos+1,optionWidth-2);
+            }
+            ypos = this.startat-1;
+            for (var i = 0; i < this.currentlisting.length; i++) {
+                var item = this.currentlisting[i];
+                ypos = ypos - (optionHeight-1);
+                this.drawingTool.drawCharacter(this.hotkeys[1][i],xpos,ypos);
             }
         }
     }

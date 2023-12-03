@@ -38,6 +38,7 @@ class tdPerson extends tdSceneEntity{
     //PUBLIC
     getCastableSpells() {
         //return array of tdSpell based on what's currently castable
+        return [new tdSpell(), new tdSpell(), new tdSpell()];
     }
     //PRIVATE
 }
@@ -49,6 +50,7 @@ class tdSpell {
     }
     //PUBLIC
     cast(x,y,scene) {
+        alert("CAST FIREBALL")
     }
     //PRIVATE
 }
