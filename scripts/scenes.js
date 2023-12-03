@@ -3,7 +3,7 @@ class tdScene {
         this.entities = [];
         this.height = height;
         this.width = width;
-        this.entities.push(new tdSceneEntity(2,3));
+        this.entities.push(new tdPerson(2,3));
     }
     getRenderableEntities() {
         return this.entities;
@@ -26,7 +26,8 @@ class tdSceneEntity {
     }
 }
 class tdPerson extends tdSceneEntity{
-    constructor () {
+    constructor (x,y) {
+        super(x,y);
         this.name = "Player";
         this.health = 10;
         this.stats = false;

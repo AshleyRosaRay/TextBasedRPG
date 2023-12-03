@@ -131,6 +131,32 @@ class tdTextCanvas {
         return span;
     }
 }
+class tdSceneView {
+    constructor (drawingTool) {
+        this.drawingTool = drawingTool;
+        document.addEventListener("keypress", this.handleKeypress.bind(this));
+        this.scene = new tdScene();
+        this.entityui = new tdPersonUI(drawingTool,this.scene.getRenderableEntities()[0]); //lol assuming first renderable is player is dumb and this is temporary
+        this.drawScene();
+    }
+    drawScene() {
+        var entities = this.scene.getRenderableEntities();
+        this.drawingTool.clear();
+        for (var i = 0; i < entities.length; i++) {
+            var entity = entities[i];
+            this.drawingTool.drawBox(entity.x,entity.y,1,1);
+            this.drawingTool.drawSprite(entity.x,entity.y,entity.sprite);
+        }
+        this.entityui.drawUI();
+    }
+    handleKeypress(e) {
+        console.log(e);
+    }
+    handleClick(x,y) {
+        this.scene.entities[0].moveTo(x,y);
+        this.drawScene();
+    }
+}
 class tdTextScreen {
     constructor (width,height) {
         this.width = width;
@@ -221,31 +247,5 @@ class tdDialogueView {
         } else {
             this.dialogueHandler.respond(Number(e.key));
         }
-    }
-}
-class tdSceneView {
-    constructor (drawingTool) {
-        this.drawingTool = drawingTool;
-        document.addEventListener("keypress", this.handleKeypress.bind(this));
-        this.scene = new tdScene();
-        this.entityui = new tdPersonUI(drawingTool,this.scene.getRenderableEntities()[0]); //lol assuming first renderable is player is dumb and this is temporary
-        this.drawScene();
-    }
-    drawScene() {
-        var entities = this.scene.getRenderableEntities();
-        this.drawingTool.clear();
-        for (var i = 0; i < entities.length; i++) {
-            var entity = entities[i];
-            this.drawingTool.drawBox(entity.x,entity.y,1,1);
-            this.drawingTool.drawSprite(entity.x,entity.y,entity.sprite);
-        }
-        this.entityui.drawUI();
-    }
-    handleKeypress(e) {
-        console.log(e);
-    }
-    handleClick(x,y) {
-        this.scene.entities[0].moveTo(x,y);
-        this.drawScene();
     }
 }
