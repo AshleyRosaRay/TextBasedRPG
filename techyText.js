@@ -232,11 +232,13 @@ class tdDialogueView {
 class tdPersonUI {
     constructor (drawingTool,person) {
         this.drawingTool = drawingTool;
+        this.options = ["Spell Book","Items","Move","End  Turn"];
         this.person = person;
     }
     drawUI () {
-        for (var i = 0; i < 4; i++) {
-            this.drawingTool.drawBox(i*6,this.drawingTool.height-5,5,5);
+        for (var i = 0; i < this.options.length; i++) {
+            this.drawingTool.drawBox(i*8,this.drawingTool.height-5,7,5);
+            this.drawingTool.drawParagraph(this.options[i],i*8+1,this.drawingTool.height-4,5);
         }
     }
 }
