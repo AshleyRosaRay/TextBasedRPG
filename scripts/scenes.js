@@ -65,7 +65,7 @@ class tdPerson extends tdSceneEntity{
     getCastableSpells() {
         //return array of tdSpell based on what's currently castable
         return [new tdSpell('Fireball',5,1,['Burning']), 
-        new tdSpell('Magic Missile',2,3,[None]), 
+        new tdSpell('Magic Missile',2,3,[]), 
         new tdSpell('Polymorph',0,1,['Polymorphed'])];
     }
     //PRIVATE
