@@ -23,9 +23,9 @@ mix-blend-mode: multiply;
 .td-canv {
   width:min-content;
   height:min-content;
-background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-background-size: 500% 500%;
-animation: gradient 15s ease infinite;
+  background: linear-gradient(-45deg, #CCF, #F77, #F9F, #88F, #FCC, #FF7, #FAF, #88A);
+  background-size: 500% 500%;
+  animation: gradient 15s linear infinite;
   margin:auto;
 }
 .asciidraw {
@@ -43,12 +43,12 @@ body {
 }
 @keyframes gradient {
 0% {
-  background-position: 0% 50%;
+  background-position: 0% 0%;
 }
 50% {
-  background-position: 100% 50%;
+  background-position: 100% 100%;
 }
 100% {
-  background-position: 0% 50%;
+  background-position: 0% 0%;
 }
 }

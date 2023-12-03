@@ -3,8 +3,12 @@ class tdTextDrawingTool {
         this.textScreen = textScreen;
         this.height = this.textScreen.height;
         this.width = this.textScreen.width;
+        this.color = "#FFFFFF";
     }
     //PUBLIC
+    setColor(colorCode) {
+        this.color = colorCode;
+    }
     drawCharacter(char,x,y) {
         this.textScreen.setChar(x,y,this.getCharForChar(char));
         this.textScreen.update(x,y,x,y);
@@ -60,11 +64,9 @@ class tdTextDrawingTool {
         this.textScreen.update(x,y,x+width,y+height);
     }
     drawSprite(x,y,sprite) {
-        console.log(sprite);
         for (var sy = 0; sy < sprite.length; sy++) {
             for (var sx = 0; sx < sprite[sy].length; sx++) {
                 var char = sprite[sy][sx];
-                console.log(char);
                 this.textScreen.setChar(x+sx,y+sy,this.getCharForChar(char));
             }
         }
@@ -79,7 +81,7 @@ class tdTextDrawingTool {
     //internal characters with colour encoding and stuff.
     //-- couldn't resist the shitty joke name.
     getCharForChar(char) {
-        return new tdTextCharacter(char,"#FFFFFF")
+        return new tdTextCharacter(char,this.color)
     }
 }
 class tdTextCanvas {
@@ -98,6 +100,9 @@ class tdTextCanvas {
         }
     }
     refreshCell(x,y) {
+        if (x < 0 || y < 0 || x >= this.textScreen.width  || y >= this.textScreen.height) {
+            return;
+        }
         var buffer = this.canvasElem.querySelector(".td-buf");
         if (buffer) {
             var target = buffer.children[y].children[x];
@@ -134,27 +139,43 @@ class tdTextCanvas {
 class tdSceneView {
     constructor (drawingTool) {
         this.drawingTool = drawingTool;
-        document.addEventListener("keypress", this.handleKeypress.bind(this));
         this.scene = new tdScene();
-        this.entityui = new tdPersonUI(drawingTool,this.scene.getRenderableEntities()[0]); //lol assuming first renderable is player is dumb and this is temporary
+        this.player = this.scene.entities[0];
+        this.entityui = new tdPersonUI(drawingTool,this.player);
         this.drawScene();
     }
     drawScene() {
         var entities = this.scene.getRenderableEntities();
+        this.drawingTool.setColor("#00AAAA");
         this.drawingTool.clear();
         for (var i = 0; i < entities.length; i++) {
             var entity = entities[i];
             this.drawingTool.drawBox(entity.x,entity.y,1,1);
             this.drawingTool.drawSprite(entity.x,entity.y,entity.sprite);
         }
+        this.drawingTool.setColor("#AA00AA");
         this.entityui.drawUI();
     }
     handleKeypress(e) {
         console.log(e);
     }
     handleClick(x,y) {
-        this.scene.entities[0].moveTo(x,y);
+        this.player.moveTo(x,y);
         this.drawScene();
+    }
+}
+class tdPersonUI {
+    constructor (drawingTool,person) {
+        this.drawingTool = drawingTool;
+        this.options = ["Spell Book","Items","Move","End Turn"];
+        this.person = person;
+    }
+    drawUI () {
+        this.drawingTool.drawBox(-1,this.drawingTool.height-5,this.drawingTool.width+2,1);
+        for (var i = 0; i < this.options.length; i++) {
+            this.drawingTool.drawBox(i*8,this.drawingTool.height-4,7,4);
+            this.drawingTool.drawParagraph(this.options[i],i*8+1,this.drawingTool.height-3,6);
+        }
     }
 }
 class tdTextScreen {
@@ -206,19 +227,6 @@ class tdTextCharacter {
     constructor (character,color) {
         this.char = character;
         this.col = color;
-    }
-}
-class tdPersonUI {
-    constructor (drawingTool,person) {
-        this.drawingTool = drawingTool;
-        this.options = ["Spell Book","Items","Move","End  Turn"];
-        this.person = person;
-    }
-    drawUI () {
-        for (var i = 0; i < this.options.length; i++) {
-            this.drawingTool.drawBox(i*8,this.drawingTool.height-4,7,4);
-            this.drawingTool.drawParagraph(this.options[i],i*8+1,this.drawingTool.height-3,6);
-        }
     }
 }
 class tdDialogueView {
