@@ -161,7 +161,7 @@ class tdSceneView {
     constructor (drawingTool) {
         this.drawingTool = drawingTool;
         this.scene = new tdScene();
-        this.player = this.scene.entities[0];
+        this.player = this.scene.getPlayerControlledEntities()[0];
         this.personui = new tdPersonUI(drawingTool,this.player);
         this.cursorX = -1;
         this.cursorY = -1;
@@ -173,12 +173,13 @@ class tdSceneView {
         this.drawingTool.setColor("#00AAAA");
         for (var i = 0; i < entities.length; i++) {
             var entity = entities[i];
-            this.drawingTool.drawSprite(entity.x-Math.floor(entity.sprite[0].length/2),entity.y-Math.floor(entity.sprite.length/2),entity.sprite);
             if (entity.hasOwnProperty("showmovement") && entity.showmovement) {
                 this.drawingTool.setColor("#AAAAFF");
                 this.drawingTool.drawCircle(entity.x,entity.y,entity.movementspeed-entity.distancemoved);
                 this.drawingTool.setColor("#00AAAA");
             }
+            this.drawingTool.drawSprite(entity.x-Math.floor(entity.sprite[0].length/2),entity.y-Math.floor(entity.sprite.length/2),entity.sprite);
+            
         }
         this.drawingTool.setColor("#AAAAFF");
         this.personui.drawUI();
@@ -238,7 +239,7 @@ class tdPersonUI {
     }
     nextTurn() {
         //This is a very temporary joke - need a real turn cycling system
-        this.person.turnTick();
+        this.person.endTurn();
     }
     movePlayer() {
         console.log(this.person.movementspeed)

@@ -33,22 +33,24 @@ mix-blend-mode: multiply;
   font-size:30px;
   user-select: none;
   background-color:#000;
-  width:min-content;
   line-height:1em;
   line-height:1;
   color:#FFF;
+  width: 1052px;
+  height: 754px;
+  resize: none;
 }
 body {
   background-color:#000;
 }
 @keyframes gradient {
-0% {
-  background-position: 0% 0%;
-}
-50% {
-  background-position: 100% 100%;
-}
-100% {
-  background-position: 0% 0%;
-}
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
 }
