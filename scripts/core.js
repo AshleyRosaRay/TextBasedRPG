@@ -4,10 +4,22 @@ class tdGameEngine {
         this.elem = element;
         this.textScreen = new tdTextScreen(40,25);
         this.textCanvas = new tdTextCanvas(element, this.textScreen);
-        this.drawingTool = new tdTextDrawingTool(this.textScreen);
+        this.spriteSheet = new tdSpriteSheet();
+        this.drawingTool = new tdTextDrawingTool(this.textScreen,this.spriteSheet);
         document.addEventListener("keypress", this.handleKeypress.bind(this));
         this.elem.addEventListener('click', this.handleClick.bind(this));
         this.elem.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        this.renderer = new tdLoadingView(this.drawingTool);
+        this.loadSprites();
+    }
+    loadSprites() {
+        var spritesheets = ["/sprites/coreassets.txt"];
+        for (var i = 0; i < spritesheets.length; i++) {
+            this.spriteSheet.registerSpriteSheet(spritesheets[i])
+        }
+        this.spriteSheet.loadSpriteSheets(this.finishLoading.bind(this));
+    }
+    finishLoading() {
         this.renderer = new tdSceneView(this.drawingTool);
     }
     handleKeypress(e) {

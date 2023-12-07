@@ -1,9 +1,10 @@
 class tdTextDrawingTool {
-    constructor (textScreen) {
+    constructor (textScreen,spriteSheet) {
         this.textScreen = textScreen;
         this.height = this.textScreen.height;
         this.width = this.textScreen.width;
         this.color = "#FFFFFF";
+        this.spriteSheet = spriteSheet;
     }
     //PUBLIC
     setColor(colorCode) {
@@ -82,27 +83,110 @@ class tdTextDrawingTool {
         }
         this.textScreen.update(x,y,x+width,y+height);
     }
-    drawSprite(x,y,sprite,transparent=true) {
-        for (var sy = 0; sy < sprite.length; sy++) {
-            for (var sx = 0; sx < sprite[sy].length; sx++) {
-                var char = sprite[sy][sx];
+    drawCharset(x,y,charset,transparent=true) {
+        for (var sy = 0; sy < charset.length; sy++) {
+            for (var sx = 0; sx < charset[sy].length; sx++) {
+                var char = charset[sy][sx];
                 if (!transparent || char!=" ") {
                     this.textScreen.setChar(x+sx,y+sy,this.getCharForChar(char));
                 }
             }
         }
-        this.textScreen.update(x,y,x+sprite[0].length,y+sprite.length);
+        this.textScreen.update(x,y,x+charset[0].length,y+charset.length);
+    }
+    drawSprite(x,y,spritename,align="origin") {
+        var xoffset = 0;
+        var yoffset = 0;
+        var chardata = this.spriteSheet.getSprite(spritename).getCharData();
+        if (align == "center") {
+            xoffset = -Math.floor(chardata[0].length/2);
+            yoffset = -Math.floor(chardata.length/2);
+        }
+        this.drawCharset(x+xoffset,y+yoffset,chardata);
     }
     clear() {
         this.textScreen.clear();
     }
     //PRIVATE
 
-    //lmao this sucks, it switches a standard js "string char" for the special
+    //This switches a standard js "string char" for the special
     //internal characters with colour encoding and stuff.
-    //-- couldn't resist the shitty joke name.
+    //The joke name makes this hard to tell, 
     getCharForChar(char) {
         return new tdTextCharacter(char,this.color)
+    }
+}
+class tdSpriteSheet {
+    constructor () {
+        this.sprites = [];
+        this.missingPlaceholder = new tdSprite(["Missing Sprite :("])
+        this.registeredSpriteSheets = [];
+        this.requestedSpriteSheets = [];
+        this.renderedCallback = false;
+    }
+    getSprite(spriteid) {
+        if (this.sprites.hasOwnProperty(spriteid)) {
+            return this.sprites[spriteid];
+        }
+        return this.missingPlaceholder;
+    }
+    addSprite(name,charsetArray) {
+        this.sprites[name] = new tdSprite(charsetArray);
+    }
+    importSpriteSheet(spritesheet) {
+        var lines = spritesheet.split('\n');
+        var currentSprite = [];
+        var currentSpriteName = false;
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            console.log(line);
+            if (line.startsWith("NEWSPRITE")) {
+                console.log("IS HEADER");
+                if (currentSpriteName !== false) {
+                    this.addSprite(currentSpriteName,currentSprite);
+                    currentSprite = [];
+                }
+                currentSpriteName = line.substr(10);
+            } else {
+                currentSprite.push(line);
+            }
+        }
+        if (currentSpriteName !== false) {
+            this.addSprite(currentSpriteName,currentSprite);
+        }
+        console.log("Loaded Sprites");
+        console.log(this.sprites);
+    }
+    registerSpriteSheet(url) {
+        this.registeredSpriteSheets.push(url);
+    }
+    loadSpriteSheets(callback) {
+        this.renderedCallback = callback;
+        for (var i = 0; i < this.registeredSpriteSheets.length; i++) {
+            console.log("REQUESTING NEW SPRITESHEET "+i);
+            var c = new XMLHttpRequest();
+            c.open('GET', this.registeredSpriteSheets[i]);
+            c.onreadystatechange = this.handleLoadResponse.bind(this);
+            c.send();
+        }
+    }
+    handleLoadResponse(e) {
+        if (e.target.readyState != XMLHttpRequest.DONE) {
+            return;
+        }
+        this.requestedSpriteSheets.push(e.target.responseURL);
+        this.importSpriteSheet(e.target.responseText);
+        if (this.requestedSpriteSheets.length == this.registeredSpriteSheets.length) {
+            this.renderedCallback();
+        }
+    }
+}
+class tdSprite {
+    constructor (chardata) {
+        this.chardata = chardata;
+    }
+    getCharData() {
+        return this.chardata;
     }
 }
 class tdTextCanvas {
@@ -178,7 +262,7 @@ class tdSceneView {
                 this.drawingTool.drawCircle(entity.x,entity.y,entity.movementspeed-entity.distancemoved);
                 this.drawingTool.setColor("#00AAAA");
             }
-            this.drawingTool.drawSprite(entity.x-Math.floor(entity.sprite[0].length/2),entity.y-Math.floor(entity.sprite.length/2),entity.sprite);
+            this.drawingTool.drawSprite(entity.x,entity.y,entity.sprite,"center");
             
         }
         this.drawingTool.setColor("#AAAAFF");
@@ -197,6 +281,17 @@ class tdSceneView {
             this.cursorX = x;
             this.cursorY = y;
         }
+    }
+}
+class tdLoadingView {
+    constructor (drawingTool) {
+        this.drawingTool = drawingTool;
+        this.drawScene();
+    }
+    drawScene() {
+        this.drawingTool.clear();
+        this.drawingTool.setColor("#00AAAA");
+        this.drawingTool.drawString("Loading...",1,1);
     }
 }
 class tdListingOption {
@@ -347,11 +442,7 @@ class tdPersonUI {
                 this.drawingTool.drawBox(xpos,ypos,5,optionHeight);
                 this.drawingTool.drawParagraph(item.text,xpos+5,ypos+1,optionWidth-2);
                 this.drawingTool.setColor("#AA0000");
-                this.drawingTool.drawSprite(xpos+1,ypos+1,[
-                    " ^ ",
-                    "^ V",
-                    "\\_/"
-                ]);
+                this.drawingTool.drawSprite(xpos+1,ypos+1,"SpellIcon_Fire");
                 this.drawingTool.setColor("#AA00AA");
             }
             ypos = this.startat-1;

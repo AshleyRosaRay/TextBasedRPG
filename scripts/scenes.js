@@ -3,7 +3,11 @@ class tdScene {
         this.entities = [];
         this.height = height;
         this.width = width;
-        this.entities.push(new tdPlayer(2,3,this.nextTurn.bind(this)),new tdEnemy(2,10,this.nextTurn.bind(this)));
+        this.entities.push(
+            new tdPlayer(2,3,this.nextTurn.bind(this)),
+            new tdEnemy(2,10,this.nextTurn.bind(this)),
+            new tdSceneEntity(15,12)
+        );
         this.turnEntity = 0;
         this.nextTurn();
     }
@@ -31,16 +35,11 @@ class tdScene {
     }
 }
 class tdSceneEntity {
-    constructor (x,y,turnCallback) {
+    constructor (x,y,turnCallback=false) {
         this.name = "Base Entity";
         this.x = x;
         this.y = y;
-        this.sprite = 
-        ["#   ",
-        "| ^ ",
-        "|\\O",
-        "| 8\\",
-        " / \\"];
+        this.sprite = "Tree";
         this.turnCallback = turnCallback;
     }
     moveTo (x,y) {
@@ -54,12 +53,15 @@ class tdSceneEntity {
     }
     endTurn() {
         console.log(this);
-        this.turnCallback();
+        if (this.turnCallback) {
+            this.turnCallback();
+        }
     }
 }
 class tdPerson extends tdSceneEntity{
     constructor (x,y,turnCallback) {
         super(x,y,turnCallback);
+        this.sprite = "Person";
         this.name = "Person";
         this.health = 10;
         this.stats = false;
@@ -111,18 +113,13 @@ class tdPlayer extends tdPerson {
         super(x,y,turnCallback);
         this.name = "Player";
         this.playerControlled = true;
+        this.sprite = "Wizard"
     }
 }
 class tdEnemy extends tdPerson {
     constructor (x,y,turnCallback) {
         super(x,y,turnCallback);
         this.name = "Enemy";
-        this.sprite = 
-        [
-        " O ",
-        "/8\\",
-        "/ \\"
-        ];
     }
     applyAI () {
         this.x += 5;
