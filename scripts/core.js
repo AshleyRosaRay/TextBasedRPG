@@ -13,14 +13,14 @@ class tdGameEngine {
         this.loadSprites();
     }
     loadSprites() {
-        var spritesheets = ["/sprites/coreassets.txt"];
+        var spritesheets = ["/assets/sprites/coreassets.txt"];
         for (var i = 0; i < spritesheets.length; i++) {
             this.spriteSheet.registerSpriteSheet(spritesheets[i])
         }
         this.spriteSheet.loadSpriteSheets(this.finishLoading.bind(this));
     }
     finishLoading() {
-        this.renderer = new tdSceneView(this.drawingTool);
+        this.renderer = new tdLocationView(this.drawingTool);
     }
     handleKeypress(e) {
         e.preventDefault();
@@ -38,7 +38,7 @@ class tdDialogueHandler {
         this.runner=false;
         //this is here because the python webserver I'm using for development
         //doesn't serve .yarn files properly - shouldnt use .html in production
-        fetch('dialog/testdialog.html')
+        fetch('assets/dialogues/testdialog.txt')
         .then(response => response.text())
         .then((yarnData) => {
             this.runner = new YarnBound({
